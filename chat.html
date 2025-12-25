@@ -1108,25 +1108,136 @@ window.addEventListener('message', function(e) {
   }
 });
 
-// ===== STREAMELEMENTS API INTEGRATION =====
-const SE_JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaXRhZGVsIiwiZXhwIjoxNzgyMjIxOTEyLCJqdGkiOiJjOWE2NGUyZi04Yjg0LTQwOTItODk3MS0yZDkyN2JjMzcyMWQiLCJjaGFubmVsIjoiNjkxOTU5NTE1MWUyMDVmNzI1Y2VkYWNmIiwicm9sZSI6Im93bmVyIiwiYXV0aFRva2VuIjoiV010RENfWllkZFB0TjQyS0pCWlE5eVYtOWtMaWZLTjhzNWZVTF9TcmlWOFh1dkV4IiwidXNlciI6IjY5MTk1OTUxNTFlMjA1ZjcyNWNlZGFjZSIsInVzZXJfaWQiOiJhYTZlMDU5NS1mODRiLTRlYjktODg3NC04ZTU3ZDc5OGUzZWMiLCJ1c2VyX3JvbGUiOiJjcmVhdG9yIiwicHJvdmlkZXIiOiJ5b3V0dWJlIiwicHJvdmlkZXJfaWQiOiJVQzhnLUM5VF9IVGVnb2RyckZPajlEX0EiLCJjcmVhdG9yX2lkIjoiZGRiMDk2MzgtZmRlMC00OTg4LWIxMjEtNTMwNjVhODA1Njg2In0.cU6poAYB2Z6gqO04Z3O_tY-zp9bPlIeTLWTCP43xSbc';
-const SE_CHANNEL_ID = '6919595151e205f725cedacf';
+// ===== STREAMELEMENTS DUAL PLATFORM INTEGRATION =====
+const SE_JWT_YOUTUBE = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaXRhZGVsIiwiZXhwIjoxNzgyMjI1Njc5LCJqdGkiOiJkNTQxMDMzOC05M2U5LTQ2YTEtYWRmOS1jNTljNjIzMjY1MWYiLCJjaGFubmVsIjoiNjkxOTU5NTE1MWUyMDVmNzI1Y2VkYWNmIiwicm9sZSI6Im93bmVyIiwiYXV0aFRva2VuIjoiV010RENfWllkZFB0TjQyS0pCWlE5eVYtOWtMaWZLTjhzNWZVTF9TcmlWOFh1dkV4IiwidXNlciI6IjY5MTk1OTUxNTFlMjA1ZjcyNWNlZGFjZSIsInVzZXJfaWQiOiJhYTZlMDU5NS1mODRiLTRlYjktODg3NC04ZTU3ZDc5OGUzZWMiLCJ1c2VyX3JvbGUiOiJjcmVhdG9yIiwicHJvdmlkZXIiOiJ5b3V0dWJlIiwicHJvdmlkZXJfaWQiOiJVQzhnLUM5VF9IVGVnb2RyckZPajlEX0EiLCJjcmVhdG9yX2lkIjoiZGRiMDk2MzgtZmRlMC00OTg4LWIxMjEtNTMwNjVhODA1Njg2In0.matvGpA2hiWNdvju3oQ6tQZRe7oKteFD_sL9Hs7mtLg';
+const SE_JWT_TWITCH = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaXRhZGVsIiwiZXhwIjoxNzgyMjI1MzQ4LCJqdGkiOiIyNWUwNWNhZC01ZjJhLTQwNzAtOTc0ZC0xZDNmMDg5YzdlZWEiLCJjaGFubmVsIjoiNjhkNDI4NjM5NjYwOGQ1MjRjNzdkMTU2Iiwicm9sZSI6Im93bmVyIiwiYXV0aFRva2VuIjoiR25EaWh2dDBXc2JVQThpa3BDdTEyTjhYMm5teVU4LWNBRXplUEdOam8tQTlNYzVVIiwidXNlciI6IjY5MTk1OTUxNTFlMjA1ZjcyNWNlZGFjZSIsInVzZXJfaWQiOiJhYTZlMDU5NS1mODRiLTRlYjktODg3NC04ZTU3ZDc5OGUzZWMiLCJ1c2VyX3JvbGUiOiJjcmVhdG9yIiwicHJvdmlkZXIiOiJ0d2l0Y2giLCJwcm92aWRlcl9pZCI6Ijk4NDM3MDk1MSIsImNoYW5uZWxfaWQiOiI3ZTIwMjI3Ny02NWJkLTQwM2QtYjU0NS1mNzE4NDAwZTc0MTUiLCJjcmVhdG9yX2lkIjoiZGRiMDk2MzgtZmRlMC00OTg4LWIxMjEtNTMwNjVhODA1Njg2In0.eM6-AP4ume1a3vpyif0WGVkeNe10xLAUsJiypAUAHTE';
 
-let seSocket;
+let seSocketYouTube;
+let seSocketTwitch;
 
-function connectStreamElements() {
-  seSocket = new WebSocket('wss://realtime.streamelements.com/socket.io/?EIO=3&transport=websocket');
+// Function untuk handle event dari StreamElements
+function handleSEEvent(eventData, platform) {
+  const type = eventData.type;
   
-  seSocket.onopen = function() {
-    console.log('✅ Connected to StreamElements!');
-    seSocket.send('42' + JSON.stringify(['authenticate', { method: 'jwt', token: SE_JWT_TOKEN }]));
+  // TIP/DONATION
+  if (type === 'tip') {
+    let avatarUrl = eventData.data.avatar || '';
+    if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Donor')}&background=E62429&color=fff&size=150`;
+    }
+    
+    const tipData = {
+      chatname: eventData.data.username || 'Anonymous',
+      chatmessage: eventData.data.message || 'Thanks for the support!',
+      chatimg: avatarUrl,
+      type: 'donation',
+      donation: parseFloat(eventData.data.amount) || 0,
+      nameColor: '#00D95F'
+    };
+    
+    console.log(`💰 [${platform}] Creating TIP bubble:`, tipData);
+    createSpecialBubble(tipData, 'donation');
+  }
+  
+  // CHEER/BITS (Twitch only)
+  else if (type === 'cheer') {
+    let avatarUrl = eventData.data.avatar || '';
+    if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Cheerer')}&background=9146FF&color=fff&size=150`;
+    }
+    
+    const cheerData = {
+      chatname: eventData.data.username || 'Anonymous',
+      chatmessage: eventData.data.message || 'Cheer!',
+      chatimg: avatarUrl,
+      type: 'twitch',
+      bits: parseInt(eventData.data.amount) || 0,
+      nameColor: '#9146FF'
+    };
+    
+    console.log(`🎉 [${platform}] Creating CHEER bubble:`, cheerData);
+    createSpecialBubble(cheerData, 'cheer');
+  }
+  
+  // SUPERCHAT (YouTube only)
+  else if (type === 'superchat') {
+    let avatarUrl = eventData.data.avatar || '';
+    if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Supporter')}&background=FF0000&color=fff&size=150`;
+    }
+    
+    const superchatData = {
+      chatname: eventData.data.username || 'Anonymous',
+      chatmessage: eventData.data.message || 'Thanks for the Superchat!',
+      chatimg: avatarUrl,
+      type: 'youtube',
+      donation: parseFloat(eventData.data.amount) || 0,
+      nameColor: '#FF0000'
+    };
+    
+    console.log(`💸 [${platform}] Creating SUPERCHAT bubble:`, superchatData);
+    createSpecialBubble(superchatData, 'donation');
+  }
+
+ // SUBSCRIBER EVENT (YouTube)
+  else if (type === 'subscriber') {
+    let avatarUrl = eventData.data.avatar || '';
+    if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Subscriber')}&background=FF0000&color=fff&size=150`;
+    }
+    
+    const subscriberData = {
+      chatname: eventData.data.username || 'Anonymous',
+      chatmessage: eventData.data.message || 'Thanks for subscribing!',
+      chatimg: avatarUrl,
+      type: 'youtube',
+      nameColor: '#FF0000'
+    };
+    
+    console.log(`🎬 [${platform}] Creating SUBSCRIBER bubble:`, subscriberData);
+    createSpecialBubble(subscriberData, 'youtube');
+  }
+  
+  // FOLLOWER EVENT (Twitch)
+  else if (type === 'follower' || type === 'follow') {
+    let avatarUrl = eventData.data.avatar || '';
+    if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+      avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Follower')}&background=9146FF&color=fff&size=150`;
+    }
+    
+    const followerData = {
+      chatname: eventData.data.username || 'Anonymous',
+      chatmessage: eventData.data.message || 'Thanks for following!',
+      chatimg: avatarUrl,
+      type: 'twitch',
+      nameColor: '#9146FF'
+    };
+    
+    console.log(`💜 [${platform}] Creating FOLLOWER bubble:`, followerData);
+    createSpecialBubble(followerData, 'twitch');
+  }
+}
+
+
+// Connect YouTube StreamElements
+function connectSEYouTube() {
+  if (!SE_JWT_YOUTUBE || SE_JWT_YOUTUBE === 'JWT_TOKEN_YOUTUBE_KAMU') {
+    console.warn('⚠️ YouTube JWT Token not configured');
+    return;
+  }
+  
+  seSocketYouTube = new WebSocket('wss://realtime.streamelements.com/socket.io/?EIO=3&transport=websocket');
+  
+  seSocketYouTube.onopen = function() {
+    console.log('✅ Connected to StreamElements YouTube!');
+    seSocketYouTube.send('42' + JSON.stringify(['authenticate', { method: 'jwt', token: SE_JWT_YOUTUBE }]));
   };
   
-  seSocket.onmessage = function(event) {
+  seSocketYouTube.onmessage = function(event) {
     const message = event.data;
     
     if (message === '2' || message === '3') {
-      if (message === '2') seSocket.send('3');
+      if (message === '2') seSocketYouTube.send('3');
       return;
     }
     
@@ -1136,92 +1247,80 @@ function connectStreamElements() {
         const eventType = data[0];
         const eventData = data[1];
         
-        console.log('📩 StreamElements Event:', eventType, eventData);
+        console.log('📩 [YouTube] StreamElements Event:', eventType, eventData);
         
         if (eventType === 'event:test' || eventType === 'event') {
-          const type = eventData.type;
-          
-          // TIP/DONATION
-          if (type === 'tip') {
-            // FALLBACK AVATAR KALAU KOSONG
-            let avatarUrl = eventData.data.avatar || '';
-            if (!avatarUrl || avatarUrl.includes('default-avatar')) {
-              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Donor')}&background=E62429&color=fff&size=150`;
-            }
-            
-            const tipData = {
-              chatname: eventData.data.username || 'Anonymous',
-              chatmessage: eventData.data.message || 'Thanks for the support!',
-              chatimg: avatarUrl,
-              type: 'donation',
-              donation: parseFloat(eventData.data.amount) || 0,
-              nameColor: '#00D95F'
-            };
-            
-            console.log('💰 Creating TIP bubble:', tipData);
-            createSpecialBubble(tipData, 'donation');
-          }
-          
-          // CHEER/BITS
-          else if (type === 'cheer') {
-            // FALLBACK AVATAR KALAU KOSONG
-            let avatarUrl = eventData.data.avatar || '';
-            if (!avatarUrl || avatarUrl.includes('default-avatar')) {
-              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Cheerer')}&background=9146FF&color=fff&size=150`;
-            }
-            
-            const cheerData = {
-              chatname: eventData.data.username || 'Anonymous',
-              chatmessage: eventData.data.message || 'Cheer!',
-              chatimg: avatarUrl,
-              type: 'twitch',
-              bits: parseInt(eventData.data.amount) || 0,
-              nameColor: '#9146FF'
-            };
-            
-            console.log('🎉 Creating CHEER bubble:', cheerData);
-            createSpecialBubble(cheerData, 'cheer');
-          }
-          
-          // SUPERCHAT
-          else if (type === 'superchat') {
-            // FALLBACK AVATAR KALAU KOSONG
-            let avatarUrl = eventData.data.avatar || '';
-            if (!avatarUrl || avatarUrl.includes('default-avatar')) {
-              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Supporter')}&background=FF0000&color=fff&size=150`;
-            }
-            
-            const superchatData = {
-              chatname: eventData.data.username || 'Anonymous',
-              chatmessage: eventData.data.message || 'Thanks for the Superchat!',
-              chatimg: avatarUrl,
-              type: 'youtube',
-              donation: parseFloat(eventData.data.amount) || 0,
-              nameColor: '#FF0000'
-            };
-            
-            console.log('💸 Creating SUPERCHAT bubble:', superchatData);
-            createSpecialBubble(superchatData, 'donation');
-          }
+          handleSEEvent(eventData, 'YouTube');
         }
-        
       } catch (e) {
-        console.error('Error parsing StreamElements message:', e);
+        console.error('[YouTube] Error parsing message:', e);
       }
     }
   };
   
-  seSocket.onerror = function(error) {
-    console.error('❌ StreamElements error:', error);
+  seSocketYouTube.onerror = function(error) {
+    console.error('❌ [YouTube] StreamElements error:', error);
   };
   
-  seSocket.onclose = function() {
-    console.log('🔌 StreamElements disconnected. Reconnecting in 5s...');
-    setTimeout(connectStreamElements, 5000);
+  seSocketYouTube.onclose = function() {
+    console.log('🔌 [YouTube] Disconnected. Reconnecting in 5s...');
+    setTimeout(connectSEYouTube, 5000);
   };
 }
 
-connectStreamElements();
+// Connect Twitch StreamElements
+function connectSETwitch() {
+  if (!SE_JWT_TWITCH || SE_JWT_TWITCH === 'JWT_TOKEN_TWITCH_KAMU') {
+    console.warn('⚠️ Twitch JWT Token not configured');
+    return;
+  }
+  
+  seSocketTwitch = new WebSocket('wss://realtime.streamelements.com/socket.io/?EIO=3&transport=websocket');
+  
+  seSocketTwitch.onopen = function() {
+    console.log('✅ Connected to StreamElements Twitch!');
+    seSocketTwitch.send('42' + JSON.stringify(['authenticate', { method: 'jwt', token: SE_JWT_TWITCH }]));
+  };
+  
+  seSocketTwitch.onmessage = function(event) {
+    const message = event.data;
+    
+    if (message === '2' || message === '3') {
+      if (message === '2') seSocketTwitch.send('3');
+      return;
+    }
+    
+    if (message.startsWith('42')) {
+      try {
+        const data = JSON.parse(message.substring(2));
+        const eventType = data[0];
+        const eventData = data[1];
+        
+        console.log('📩 [Twitch] StreamElements Event:', eventType, eventData);
+        
+        if (eventType === 'event:test' || eventType === 'event') {
+          handleSEEvent(eventData, 'Twitch');
+        }
+      } catch (e) {
+        console.error('[Twitch] Error parsing message:', e);
+      }
+    }
+  };
+  
+  seSocketTwitch.onerror = function(error) {
+    console.error('❌ [Twitch] StreamElements error:', error);
+  };
+  
+  seSocketTwitch.onclose = function() {
+    console.log('🔌 [Twitch] Disconnected. Reconnecting in 5s...');
+    setTimeout(connectSETwitch, 5000);
+  };
+}
+
+// Start both connections
+connectSEYouTube();
+connectSETwitch();
+
 </script>
 </body>
 </html>
