@@ -527,21 +527,132 @@ if (platform === 'youtube') {
   const bubbleInnerWhite = `5,5 ${bubbleWidth - 5},5 ${bubbleEnd - 2},${bubbleHeight - 5} -30,${bubbleHeight - 5}`;
   const bubbleInnerColor = `10,10 ${bubbleWidth - 10},10 ${bubbleEnd - 5},${bubbleHeight - 10} -22,${bubbleHeight - 10}`;
 
-  // Loading animation
-  const loadingDiv = document.createElement('div');
-  loadingDiv.className = 'loading-dots';
-loadingDiv.innerHTML = `
+// Loading animation - BERBEDA UNTUK SEMUA PLATFORM
+const loadingDiv = document.createElement('div');
+loadingDiv.className = 'loading-dots';
+
+if (platform === 'donation') {
+  // TIP/DONATION: 3 Money emoji pulse
+  loadingDiv.innerHTML = `
 <svg width="150" height="80" viewBox="0 0 150 80" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <filter id="border-glow-${platform}" x="-50%" y="-50%" width="200%" height="200%">
+    <filter id="border-glow-${platform}-${Date.now()}" x="-50%" y="-50%" width="200%" height="200%">
       <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
     </filter>
   </defs>
   
   <!-- Border dengan blur/glow -->
-  <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform})"/>
+  <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
   
-  <!-- Kotak hitam di atas -->
+  <!-- Kotak hitam -->
+  <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
+  
+  <!-- 3 Money Emoji -->
+  <text x="35" y="48" font-size="20" text-anchor="middle" opacity="0">💰
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
+    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
+  </text>
+  
+  <text x="75" y="48" font-size="20" text-anchor="middle" opacity="0">💰
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
+    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
+  </text>
+  
+  <text x="115" y="48" font-size="20" text-anchor="middle" opacity="0">💰
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
+    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
+  </text>
+</svg>
+`;
+
+} else if (platform === 'cheer') {
+  // CHEER/BITS: 3 Sparkle emoji pulse
+  loadingDiv.innerHTML = `
+<svg width="150" height="80" viewBox="0 0 150 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="border-glow-${platform}-${Date.now()}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+    </filter>
+  </defs>
+  
+  <!-- Border dengan blur/glow -->
+  <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
+  
+  <!-- Kotak hitam -->
+  <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
+  
+  <!-- 3 Sparkle Emoji -->
+  <text x="35" y="48" font-size="20" text-anchor="middle" opacity="0">✨
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
+    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
+  </text>
+  
+  <text x="75" y="48" font-size="20" text-anchor="middle" opacity="0">✨
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
+    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
+  </text>
+  
+  <text x="115" y="48" font-size="20" text-anchor="middle" opacity="0">✨
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
+    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
+  </text>
+</svg>
+`;
+
+} else if (platform === 'youtube' || platform === 'twitch') {
+  // SUBSCRIBE/FOLLOW: 3 HATI dengan pulse simple
+  loadingDiv.innerHTML = `
+<svg width="150" height="80" viewBox="0 0 150 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="border-glow-${platform}-${Date.now()}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+    </filter>
+  </defs>
+  
+  <!-- Border dengan blur/glow -->
+  <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
+  
+  <!-- Kotak hitam -->
+  <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
+  
+  <!-- Hati 1 -->
+  <path d="M 12,5 C 12,2.5 10,1 8,1 C 6,1 4.5,2.5 4.5,4 C 4.5,2.5 3,1 1,1 C -1,1 -2.5,2.5 -2.5,5 C -2.5,9 4.5,14 4.5,14 C 4.5,14 12,9 12,5 Z" 
+        fill="${bubbleColor}" opacity="0" transform="translate(30, 28) scale(1.5)">
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="scale" additive="sum" 
+                      values="0 0; 1.2 1.2; 1 1" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
+  </path>
+  
+  <!-- Hati 2 -->
+  <path d="M 12,5 C 12,2.5 10,1 8,1 C 6,1 4.5,2.5 4.5,4 C 4.5,2.5 3,1 1,1 C -1,1 -2.5,2.5 -2.5,5 C -2.5,9 4.5,14 4.5,14 C 4.5,14 12,9 12,5 Z" 
+        fill="${bubbleColor}" opacity="0" transform="translate(70, 28) scale(1.5)">
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="scale" additive="sum" 
+                      values="0 0; 1.2 1.2; 1 1" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
+  </path>
+  
+  <!-- Hati 3 -->
+  <path d="M 12,5 C 12,2.5 10,1 8,1 C 6,1 4.5,2.5 4.5,4 C 4.5,2.5 3,1 1,1 C -1,1 -2.5,2.5 -2.5,5 C -2.5,9 4.5,14 4.5,14 C 4.5,14 12,9 12,5 Z" 
+        fill="${bubbleColor}" opacity="0" transform="translate(110, 28) scale(1.5)">
+    <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
+    <animateTransform attributeName="transform" type="scale" additive="sum" 
+                      values="0 0; 1.2 1.2; 1 1" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
+  </path>
+</svg>
+`;
+
+
+} else {
+  // FALLBACK: 3 dots klasik
+  loadingDiv.innerHTML = `
+<svg width="150" height="80" viewBox="0 0 150 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="border-glow-${platform}-${Date.now()}" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+    </filter>
+  </defs>
+  
+  <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
   <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
   
   <circle cx="40" cy="40" r="10" fill="${bubbleColor}" opacity="0">
@@ -560,6 +671,9 @@ loadingDiv.innerHTML = `
   </circle>
 </svg>
 `;
+}
+
+
 
   // Main content
   const contentDiv = document.createElement('div');
@@ -1320,6 +1434,7 @@ function connectSETwitch() {
 // Start both connections
 connectSEYouTube();
 connectSETwitch();
+
 </script>
 </body>
 </html>
