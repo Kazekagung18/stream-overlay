@@ -541,27 +541,32 @@ if (platform === 'donation') {
     </filter>
   </defs>
   
-  <!-- Border dengan blur/glow -->
   <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
-  
-  <!-- Kotak hitam -->
   <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
   
-  <!-- 3 Money Emoji -->
-  <text x="35" y="48" font-size="20" text-anchor="middle" opacity="0">💰
+  <!-- Emoji 1 -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
-    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
-  </text>
+    <foreignObject x="25" y="25" width="30" height="30">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:22px; text-align:center;">💰</div>
+    </foreignObject>
+  </g>
   
-  <text x="75" y="48" font-size="20" text-anchor="middle" opacity="0">💰
+  <!-- Emoji 2 -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
-    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
-  </text>
+    <foreignObject x="65" y="25" width="30" height="30">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:22px; text-align:center;">💰</div>
+    </foreignObject>
+  </g>
   
-  <text x="115" y="48" font-size="20" text-anchor="middle" opacity="0">💰
+  <!-- Emoji 3 -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
-    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
-  </text>
+    <foreignObject x="105" y="25" width="30" height="30">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:22px; text-align:center;">💰</div>
+    </foreignObject>
+  </g>
 </svg>
 `;
 
@@ -575,32 +580,37 @@ if (platform === 'donation') {
     </filter>
   </defs>
   
-  <!-- Border dengan blur/glow -->
   <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
-  
-  <!-- Kotak hitam -->
   <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
   
-  <!-- 3 Sparkle Emoji -->
-  <text x="35" y="48" font-size="20" text-anchor="middle" opacity="0">✨
+  <!-- Emoji 1 -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
-    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0s" fill="freeze"/>
-  </text>
+    <foreignObject x="25" y="25" width="30" height="30">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:22px; text-align:center;">✨</div>
+    </foreignObject>
+  </g>
   
-  <text x="75" y="48" font-size="20" text-anchor="middle" opacity="0">✨
+  <!-- Emoji 2 -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
-    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.4s" fill="freeze"/>
-  </text>
+    <foreignObject x="65" y="25" width="30" height="30">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:22px; text-align:center;">✨</div>
+    </foreignObject>
+  </g>
   
-  <text x="115" y="48" font-size="20" text-anchor="middle" opacity="0">✨
+  <!-- Emoji 3 -->
+  <g opacity="0">
     <animate attributeName="opacity" values="0;1;1" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
-    <animate attributeName="font-size" values="0;24;20" keyTimes="0;0.5;1" dur="0.5s" begin="0.8s" fill="freeze"/>
-  </text>
+    <foreignObject x="105" y="25" width="30" height="30">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:22px; text-align:center;">✨</div>
+    </foreignObject>
+  </g>
 </svg>
 `;
 
 } else if (platform === 'youtube' || platform === 'twitch') {
-  // SUBSCRIBE/FOLLOW: 3 HATI dengan pulse simple
+  // SUBSCRIBE/FOLLOW: 3 HATI dengan pulse
   loadingDiv.innerHTML = `
 <svg width="150" height="80" viewBox="0 0 150 80" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -609,10 +619,7 @@ if (platform === 'donation') {
     </filter>
   </defs>
   
-  <!-- Border dengan blur/glow -->
   <rect x="10" y="10" width="130" height="60" fill="none" stroke="${bubbleColor}" stroke-width="10" filter="url(#border-glow-${platform}-${Date.now()})"/>
-  
-  <!-- Kotak hitam -->
   <rect x="10" y="10" width="130" height="60" fill="#000000" stroke="${bubbleColor}" stroke-width="3"/>
   
   <!-- Hati 1 -->
@@ -640,7 +647,6 @@ if (platform === 'donation') {
   </path>
 </svg>
 `;
-
 
 } else {
   // FALLBACK: 3 dots klasik
@@ -672,6 +678,8 @@ if (platform === 'donation') {
 </svg>
 `;
 }
+
+
 
 
 
