@@ -1112,7 +1112,6 @@ window.addEventListener('message', function(e) {
 const SE_JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaXRhZGVsIiwiZXhwIjoxNzgyMjIxOTEyLCJqdGkiOiJjOWE2NGUyZi04Yjg0LTQwOTItODk3MS0yZDkyN2JjMzcyMWQiLCJjaGFubmVsIjoiNjkxOTU5NTE1MWUyMDVmNzI1Y2VkYWNmIiwicm9sZSI6Im93bmVyIiwiYXV0aFRva2VuIjoiV010RENfWllkZFB0TjQyS0pCWlE5eVYtOWtMaWZLTjhzNWZVTF9TcmlWOFh1dkV4IiwidXNlciI6IjY5MTk1OTUxNTFlMjA1ZjcyNWNlZGFjZSIsInVzZXJfaWQiOiJhYTZlMDU5NS1mODRiLTRlYjktODg3NC04ZTU3ZDc5OGUzZWMiLCJ1c2VyX3JvbGUiOiJjcmVhdG9yIiwicHJvdmlkZXIiOiJ5b3V0dWJlIiwicHJvdmlkZXJfaWQiOiJVQzhnLUM5VF9IVGVnb2RyckZPajlEX0EiLCJjcmVhdG9yX2lkIjoiZGRiMDk2MzgtZmRlMC00OTg4LWIxMjEtNTMwNjVhODA1Njg2In0.cU6poAYB2Z6gqO04Z3O_tY-zp9bPlIeTLWTCP43xSbc';
 const SE_CHANNEL_ID = '6919595151e205f725cedacf';
 
-// Connect to StreamElements WebSocket
 let seSocket;
 
 function connectStreamElements() {
@@ -1120,24 +1119,17 @@ function connectStreamElements() {
   
   seSocket.onopen = function() {
     console.log('✅ Connected to StreamElements!');
-    
-    // Authenticate
-    seSocket.send('42' + JSON.stringify([
-      'authenticate',
-      { method: 'jwt', token: SE_JWT_TOKEN }
-    ]));
+    seSocket.send('42' + JSON.stringify(['authenticate', { method: 'jwt', token: SE_JWT_TOKEN }]));
   };
   
   seSocket.onmessage = function(event) {
     const message = event.data;
     
-    // Skip ping/pong
     if (message === '2' || message === '3') {
-      if (message === '2') seSocket.send('3'); // pong
+      if (message === '2') seSocket.send('3');
       return;
     }
     
-    // Parse event
     if (message.startsWith('42')) {
       try {
         const data = JSON.parse(message.substring(2));
@@ -1146,13 +1138,21 @@ function connectStreamElements() {
         
         console.log('📩 StreamElements Event:', eventType, eventData);
         
-        // TIP/DONATION EVENT
         if (eventType === 'event:test' || eventType === 'event') {
-          if (eventData.type === 'tip') {
+          const type = eventData.type;
+          
+          // TIP/DONATION
+          if (type === 'tip') {
+            // FALLBACK AVATAR KALAU KOSONG
+            let avatarUrl = eventData.data.avatar || '';
+            if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Donor')}&background=E62429&color=fff&size=150`;
+            }
+            
             const tipData = {
               chatname: eventData.data.username || 'Anonymous',
               chatmessage: eventData.data.message || 'Thanks for the support!',
-              chatimg: eventData.data.avatar || 'https://i.pravatar.cc/150?img=99',
+              chatimg: avatarUrl,
               type: 'donation',
               donation: parseFloat(eventData.data.amount) || 0,
               nameColor: '#00D95F'
@@ -1162,12 +1162,18 @@ function connectStreamElements() {
             createSpecialBubble(tipData, 'donation');
           }
           
-          // CHEER/BITS EVENT (Twitch only)
-          if (eventData.type === 'cheer') {
+          // CHEER/BITS
+          else if (type === 'cheer') {
+            // FALLBACK AVATAR KALAU KOSONG
+            let avatarUrl = eventData.data.avatar || '';
+            if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Cheerer')}&background=9146FF&color=fff&size=150`;
+            }
+            
             const cheerData = {
               chatname: eventData.data.username || 'Anonymous',
               chatmessage: eventData.data.message || 'Cheer!',
-              chatimg: eventData.data.avatar || 'https://i.pravatar.cc/150?img=88',
+              chatimg: avatarUrl,
               type: 'twitch',
               bits: parseInt(eventData.data.amount) || 0,
               nameColor: '#9146FF'
@@ -1175,6 +1181,27 @@ function connectStreamElements() {
             
             console.log('🎉 Creating CHEER bubble:', cheerData);
             createSpecialBubble(cheerData, 'cheer');
+          }
+          
+          // SUPERCHAT
+          else if (type === 'superchat') {
+            // FALLBACK AVATAR KALAU KOSONG
+            let avatarUrl = eventData.data.avatar || '';
+            if (!avatarUrl || avatarUrl.includes('default-avatar')) {
+              avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(eventData.data.username || 'Supporter')}&background=FF0000&color=fff&size=150`;
+            }
+            
+            const superchatData = {
+              chatname: eventData.data.username || 'Anonymous',
+              chatmessage: eventData.data.message || 'Thanks for the Superchat!',
+              chatimg: avatarUrl,
+              type: 'youtube',
+              donation: parseFloat(eventData.data.amount) || 0,
+              nameColor: '#FF0000'
+            };
+            
+            console.log('💸 Creating SUPERCHAT bubble:', superchatData);
+            createSpecialBubble(superchatData, 'donation');
           }
         }
         
@@ -1194,7 +1221,6 @@ function connectStreamElements() {
   };
 }
 
-// Start connection
 connectStreamElements();
 
 
