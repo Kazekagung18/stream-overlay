@@ -493,8 +493,29 @@ userMessage = userMessage
   .trim();
 
   
-  // WARNA BERDASARKAN PLATFORM
-  const bubbleColor = platform === 'youtube' ? '#FF0000' : '#6441A5';
+// WARNA BERDASARKAN PLATFORM
+let bubbleColor = '#E62429';
+let welcomeText = 'WELCOME TO BAMBOO SQUAD';
+
+if (platform === 'youtube') {
+  bubbleColor = '#FF0000';
+  welcomeText = 'WELCOME TO BAMBOO SQUAD';
+} else if (platform === 'twitch') {
+  bubbleColor = '#6441A5';
+  welcomeText = 'WELCOME TO BAMBOO SQUAD';
+} else if (platform === 'donation') {
+  bubbleColor = '#6441A5'; // UNGU KAYAK TWITCH
+  // Ambil amount dari data
+  const tipAmount = data.donation || data.amount || 0;
+  welcomeText = `MEMBERIKAN TIP $${tipAmount}`;
+} else if (platform === 'cheer') {
+  bubbleColor = '#6441A5'; // UNGU KAYAK TWITCH
+  // Ambil bits dari data
+  const cheerAmount = data.bits || data.amount || 0;
+  welcomeText = `MEMBERIKAN ${cheerAmount} CHEER`;
+}
+
+
 
   const bubbleWidth = 550;
   const bubbleHeight = 160;
@@ -572,8 +593,7 @@ loadingDiv.innerHTML = `
   <text class="username-text" x="75" y="60" fill="#FFFFFF" font-size="22" font-weight="900">${username}</text>
 
   <!-- Welcome Text -->
- <text x="75" y="110" fill="#FFFFFF" font-size="48" font-weight="400" font-family="'Bebas Neue', sans-serif">"WELCOME TO BAMBOO SQUAD"</text>
-
+<text x="75" y="110" fill="#FFFFFF" font-size="48" font-weight="400" font-family="'Bebas Neue', sans-serif">"${welcomeText}"</text>
 
 
 
@@ -919,14 +939,12 @@ const messageTextElements = `
 
   adjustMessageWrapperScroll();
   
-  // Auto scroll to bottom kalau user gak scroll
-  if (!isUserScrolling) {
-    setTimeout(scrollToBottom, 100);
-  } else {
-    // Increment new messages counter
-    newMessagesCount++;
-    updateNewMessagesBadge();
-  }
+  // Increment new messages counter kalau user scroll
+if (isUserScrolling) {
+  newMessagesCount++;
+  updateNewMessagesBadge();
+}
+
 }
 
 
@@ -1029,14 +1047,157 @@ const demoMessages = [
     type: "twitch",
     nameColor: "#00D9FF",
     chatbadges: []
+  },
+  // ===== TAMBAHKAN 2 INI =====
+  {
+    chatname: "GenerousDonor",
+    chatmessage: "Ini donasi untuk support stream! Keep it up!",
+    chatimg: "https://i.pravatar.cc/150?img=8",
+    type: 'donation',
+    hasDonation: '$50 donation',
+    donation: 50,
+    nameColor: '#00D95F'
+  },
+  {
+    chatname: "CheerMaster",
+    chatmessage: "Cheer1000 mantap streamnya bro!",
+    chatimg: "https://i.pravatar.cc/150?img=25",
+    type: 'twitch',
+    hasBits: true,
+    bits: 1000,
+    nameColor: '#9146FF'
   }
 ];
 
+
 demoButton.addEventListener('click', function() {
   const demoData = demoMessages[demoCounter % demoMessages.length];
-  addMessageToOverlay(demoData);
+  
+  // Cek apakah ini donation/cheer special event
+  if (demoData.type === 'donation') {
+    createSpecialBubble(demoData, 'donation');
+  } else if (demoData.hasBits) {
+    createSpecialBubble(demoData, 'cheer');
+  } else {
+    // Cek special event (sub/follow)
+    const specialEvent = isSpecialEvent(demoData.chatmessage);
+    if (specialEvent) {
+      createSpecialBubble(demoData, specialEvent);
+    } else {
+      addMessageToOverlay(demoData);
+    }
+  }
+  
   demoCounter++;
 });
+
+// ===== LISTEN DARI STREAMELEMENTS TIP & CHEER =====
+window.addEventListener('message', function(e) {
+  // Skip kalau bukan dari StreamElements
+  if (!e.data || typeof e.data !== 'object') return;
+  
+  // Cek apakah ini StreamElements event
+  if (e.data.type === 'SE_DONATION') {
+    console.log('✅ Received DONATION from StreamElements:', e.data.data);
+    createSpecialBubble(e.data.data, 'donation');
+  }
+  
+  if (e.data.type === 'SE_CHEER') {
+    console.log('✅ Received CHEER from StreamElements:', e.data.data);
+    createSpecialBubble(e.data.data, 'cheer');
+  }
+});
+
+// ===== STREAMELEMENTS API INTEGRATION =====
+const SE_JWT_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJjaXRhZGVsIiwiZXhwIjoxNzgyMjIxOTEyLCJqdGkiOiJjOWE2NGUyZi04Yjg0LTQwOTItODk3MS0yZDkyN2JjMzcyMWQiLCJjaGFubmVsIjoiNjkxOTU5NTE1MWUyMDVmNzI1Y2VkYWNmIiwicm9sZSI6Im93bmVyIiwiYXV0aFRva2VuIjoiV010RENfWllkZFB0TjQyS0pCWlE5eVYtOWtMaWZLTjhzNWZVTF9TcmlWOFh1dkV4IiwidXNlciI6IjY5MTk1OTUxNTFlMjA1ZjcyNWNlZGFjZSIsInVzZXJfaWQiOiJhYTZlMDU5NS1mODRiLTRlYjktODg3NC04ZTU3ZDc5OGUzZWMiLCJ1c2VyX3JvbGUiOiJjcmVhdG9yIiwicHJvdmlkZXIiOiJ5b3V0dWJlIiwicHJvdmlkZXJfaWQiOiJVQzhnLUM5VF9IVGVnb2RyckZPajlEX0EiLCJjcmVhdG9yX2lkIjoiZGRiMDk2MzgtZmRlMC00OTg4LWIxMjEtNTMwNjVhODA1Njg2In0.cU6poAYB2Z6gqO04Z3O_tY-zp9bPlIeTLWTCP43xSbc';
+const SE_CHANNEL_ID = '6919595151e205f725cedacf';
+
+// Connect to StreamElements WebSocket
+let seSocket;
+
+function connectStreamElements() {
+  seSocket = new WebSocket('wss://realtime.streamelements.com/socket.io/?EIO=3&transport=websocket');
+  
+  seSocket.onopen = function() {
+    console.log('✅ Connected to StreamElements!');
+    
+    // Authenticate
+    seSocket.send('42' + JSON.stringify([
+      'authenticate',
+      { method: 'jwt', token: SE_JWT_TOKEN }
+    ]));
+  };
+  
+  seSocket.onmessage = function(event) {
+    const message = event.data;
+    
+    // Skip ping/pong
+    if (message === '2' || message === '3') {
+      if (message === '2') seSocket.send('3'); // pong
+      return;
+    }
+    
+    // Parse event
+    if (message.startsWith('42')) {
+      try {
+        const data = JSON.parse(message.substring(2));
+        const eventType = data[0];
+        const eventData = data[1];
+        
+        console.log('📩 StreamElements Event:', eventType, eventData);
+        
+        // TIP/DONATION EVENT
+        if (eventType === 'event:test' || eventType === 'event') {
+          if (eventData.type === 'tip') {
+            const tipData = {
+              chatname: eventData.data.username || 'Anonymous',
+              chatmessage: eventData.data.message || 'Thanks for the support!',
+              chatimg: eventData.data.avatar || 'https://i.pravatar.cc/150?img=99',
+              type: 'donation',
+              donation: parseFloat(eventData.data.amount) || 0,
+              nameColor: '#00D95F'
+            };
+            
+            console.log('💰 Creating TIP bubble:', tipData);
+            createSpecialBubble(tipData, 'donation');
+          }
+          
+          // CHEER/BITS EVENT (Twitch only)
+          if (eventData.type === 'cheer') {
+            const cheerData = {
+              chatname: eventData.data.username || 'Anonymous',
+              chatmessage: eventData.data.message || 'Cheer!',
+              chatimg: eventData.data.avatar || 'https://i.pravatar.cc/150?img=88',
+              type: 'twitch',
+              bits: parseInt(eventData.data.amount) || 0,
+              nameColor: '#9146FF'
+            };
+            
+            console.log('🎉 Creating CHEER bubble:', cheerData);
+            createSpecialBubble(cheerData, 'cheer');
+          }
+        }
+        
+      } catch (e) {
+        console.error('Error parsing StreamElements message:', e);
+      }
+    }
+  };
+  
+  seSocket.onerror = function(error) {
+    console.error('❌ StreamElements error:', error);
+  };
+  
+  seSocket.onclose = function() {
+    console.log('🔌 StreamElements disconnected. Reconnecting in 5s...');
+    setTimeout(connectStreamElements, 5000);
+  };
+}
+
+// Start connection
+connectStreamElements();
+
+
 </script>
 </body>
 </html>
