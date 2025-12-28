@@ -1131,7 +1131,33 @@ console.log("Custom Chat Overlay Loaded! Session ID:", roomID);
 // DEMO BUTTON
 const demoButton = document.getElementById('demo-button');
 let demoCounter = 0;
+// GANTI DENGAN LocalStorage Listener
+window.addEventListener('storage', function(e) {
+  if (e.key === 'saweria-alert' && e.newValue) {
+    try {
+      const data = JSON.parse(e.newValue);
+      console.log('✅ Saweria donation received via localStorage:', data);
+      
+      const donationData = {
+        chatname: data.name || 'Anonymous',
+        chatmessage: data.message || 'Thank you for the support!',
+        chatimg: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Donor')}&background=4ade80&color=fff&size=150`,
+        type: 'donation',
+        donation: parseFloat(data.amount) || 0,
+        nameColor: data.currency === '$' ? '#facc15' : '#4ade80'
+      };
+      
+      createSpecialBubble(donationData, 'donation');
+      
+      // Clear after processing
+      localStorage.removeItem('saweria-alert');
+    } catch (error) {
+      console.error('Error parsing Saweria data:', error);
+    }
+  }
+});
 const demoMessages = [
+
   {
     chatname: "StreamerPro",
     chatmessage: "Halo semua! Ini pesan demo pertama 🎮",
@@ -1190,6 +1216,23 @@ const demoMessages = [
     hasBits: true,
     bits: 1000,
     nameColor: '#9146FF'
+  },
+  // ===== TAMBAHKAN 2 INI (SAWERIA) =====
+  {
+    chatname: "SaweriaDonor",
+    chatmessage: "Donasi dari Saweria! Semangat streamnya!",
+    chatimg: "https://i.pravatar.cc/150?img=18",
+    type: 'saweria',
+    donation: 50000,
+    nameColor: '#4ade80'
+  },
+  {
+    chatname: "SaweriaTipper",
+    chatmessage: "Tip via Saweria! Keep up the good work!",
+    chatimg: "https://i.pravatar.cc/150?img=22",
+    type: 'donation',
+    donation: 10,
+    nameColor: '#facc15'
   }
 ];
 
@@ -1197,8 +1240,8 @@ const demoMessages = [
 demoButton.addEventListener('click', function() {
   const demoData = demoMessages[demoCounter % demoMessages.length];
   
-  // Cek apakah ini donation/cheer special event
-  if (demoData.type === 'donation') {
+  // Cek apakah ini donation/cheer/saweria special event
+  if (demoData.type === 'donation' || demoData.type === 'saweria') {
     createSpecialBubble(demoData, 'donation');
   } else if (demoData.hasBits) {
     createSpecialBubble(demoData, 'cheer');
@@ -1214,6 +1257,7 @@ demoButton.addEventListener('click', function() {
   
   demoCounter++;
 });
+
 
 // ===== LISTEN DARI STREAMELEMENTS TIP & CHEER =====
 window.addEventListener('message', function(e) {
@@ -1444,6 +1488,75 @@ function connectSETwitch() {
 // Start both connections
 connectSEYouTube();
 connectSETwitch();
+
+// ===== TEST SAWERIA FUNCTION =====
+window.testSaweria = function(currency = 'Rp') {
+  const testData = {
+    chatname: 'Test Saweria Donor',
+    chatmessage: 'Ini test donasi dari Saweria!',
+    chatimg: 'https://ui-avatars.com/api/?name=TestDonor&background=4ade80&color=fff&size=150',
+    type: 'donation',
+    donation: currency === '$' ? 10 : 50000,
+    nameColor: currency === '$' ? '#facc15' : '#4ade80'
+  };
+  createSpecialBubble(testData, 'donation');
+  console.log('✅ Test Saweria triggered:', currency);
+};
+
+console.log('🎮 Test ready! Type: testSaweria("Rp") or testSaweria("$")');
+
+// ===== Saweria Bridge WebSocket =====
+let saweriaWS;
+
+function connectSaweriaWS() {
+  try {
+    const saweriaWS = new WebSocket('wss://saweria-bridge-production.up.railway.app');
+
+
+    saweriaWS.onopen = () => {
+      console.log('Saweria WS connected');
+    };
+
+    saweriaWS.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Saweria WS event:', data);
+
+        if (data.type === 'saweria-donation') {
+          const donationData = {
+            chatname: data.name || 'Anonymous',
+            chatmessage: data.message || 'Thank you for the support!',
+            chatimg: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'Donor')}&background=4ade80&color=fff&size=150`,
+            type: 'donation',
+            donation: parseFloat(data.amount) || 0,
+            nameColor: data.currency === '$' ? '#facc15' : '#4ade80'
+          };
+
+          createSpecialBubble(donationData, 'donation');
+        }
+      } catch (err) {
+        console.error('Error parsing Saweria WS data:', err);
+      }
+    };
+
+    saweriaWS.onclose = () => {
+      console.log('Saweria WS disconnected, retrying in 5s...');
+      setTimeout(connectSaweriaWS, 5000);
+    };
+
+    saweriaWS.onerror = (err) => {
+      console.error('Saweria WS error:', err);
+    };
+  } catch (err) {
+    console.error('Saweria WS connect error:', err);
+  }
+}
+
+// Panggil saat overlay load
+document.addEventListener('DOMContentLoaded', () => {
+  connectSaweriaWS();
+});
+
 
 </script>
 </body>
