@@ -808,6 +808,17 @@ function addMessageToOverlay(data) {
   // BUBBLE NORMAL (kode asli kamu)
   const messageDiv = document.createElement('div');
   messageDiv.classList.add('message');
+  // Ganti dengan nama akun kamu persis (Twitch/YouTube)
+const STREAMER_NAME = "Kapandaa__";
+
+const isSelfMessage =
+  data.chatname &&
+  data.chatname.trim().toLowerCase() === STREAMER_NAME.toLowerCase();
+
+if (isSelfMessage) {
+  messageDiv.classList.add('self-message');
+}
+
   const messageId = data.mid || 'msg-' + Date.now() + '-' + Math.random();
   messageDiv.id = messageId;
   messageTimestamps.set(messageId, Date.now());
@@ -860,18 +871,28 @@ const lineCount = Math.max(1, Math.min(lines, 5)); // Min 1, max 5
 
 
 
-  const bubbleWidth = 520;
-  const bubbleWidthInner = 498;
-  const bubbleEnd = 435;
+const bubbleWidth = 520;
+const bubbleWidthInner = 498;
+const bubbleEnd = 435;
+const paddingTop = 55;
+const lineHeight = 26;
+const paddingBottom = 30;
+const bubbleHeight = paddingTop + lineCount * lineHeight + paddingBottom;
+const svgHeight = bubbleHeight + 40;
 
-  const paddingTop = 55;
-  const lineHeight = 26;
-  const paddingBottom = 30;
-  const bubbleHeight = paddingTop + (lineCount * lineHeight) + paddingBottom;
+let bubblePoints;
+let bubbleInnerPoints;
 
-  const svgHeight = bubbleHeight + 40;
-  const bubblePoints = `0,0 ${bubbleWidth},0 ${bubbleEnd},${bubbleHeight} 0,${bubbleHeight}`;
-  const bubbleInnerPoints = `7,7 ${bubbleWidthInner},7 ${bubbleEnd - 3},${bubbleHeight - 7} 7,${bubbleHeight - 7}`;
+if (isSelfMessage) {
+  // bubble dengan ekor di kanan
+  bubblePoints = `${bubbleWidth - bubbleEnd},0 ${bubbleWidth},0 ${bubbleWidth},${bubbleHeight} 0,${bubbleHeight}`;
+  bubbleInnerPoints = `${bubbleWidth - (bubbleEnd - 3)},7 ${bubbleWidthInner},7 ${bubbleWidthInner},${bubbleHeight - 7} 7,${bubbleHeight - 7}`;
+} else {
+  // bubble normal (ekor kiri)
+  bubblePoints = `0,0 ${bubbleWidth},0 ${bubbleEnd},${bubbleHeight} 0,${bubbleHeight}`;
+  bubbleInnerPoints = `7,7 ${bubbleWidthInner},7 ${bubbleEnd - 3},${bubbleHeight - 7} 7,${bubbleHeight - 7}`;
+}
+
 
 
   let accentColor = '#E62429';
@@ -954,14 +975,24 @@ const messageTextElements = `
 
   const contentDiv = document.createElement('div');
   contentDiv.style.position = 'relative';
+  const outerColor = isSelfMessage ? "#000000" : "#FFFFFF";
+  const innerColor = isSelfMessage ? "#FFFFFF" : "#000000";
+  const baseAvatarX = 5;
+  const baseUsernameX = 100;
+  const baseMessageX = 180;
+  const avatarX = isSelfMessage ? 520 - baseAvatarX - 120 : baseAvatarX;   // 120 kira2 lebar avatar
+  const usernameX = isSelfMessage ? 520 - baseUsernameX - 260 : baseUsernameX; // 260 kira2 lebar username bar
+  const messageX = isSelfMessage ? 520 - baseMessageX - 330 : baseMessageX; // 330 kira2 lebar area teks
+  
   contentDiv.innerHTML = `
-<svg width="700" height="${svgHeight}" viewBox="0 0 700 ${svgHeight}" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+  <svg width="700" height="${svgHeight}" viewBox="0 0 700 ${svgHeight}" xmlns="http://www.w3.org/2000/svg" overflow="visible">
   <g transform="translate(75, 20)">
-    <polygon points="${bubblePoints}" fill="#FFFFFF"/>
-    <polygon points="${bubbleInnerPoints}" fill="#000000"/>
+    <polygon points="${bubblePoints}" fill="${outerColor}"></polygon>
+    <polygon points="${bubbleInnerPoints}" fill="${innerColor}"></polygon>
+
   </g>
 
-  <g transform="translate(5, 35) rotate(-3, 55, 46)">
+  <g transform="translate(${avatarX}, 35) rotate(-3, 55, 46)">
     <polygon points="0,0 110,0 110,82 10,92" fill="#FFFFFF"/>
     <polygon points="6,6 104,6 104,78 12,86" fill="${accentColor}"/>
     <defs>
@@ -974,7 +1005,7 @@ const messageTextElements = `
 
   ${platformIconHtml}
 
-  <g class="username-group" transform="translate(100, 6) rotate(-2, 90, 18)">
+    <g class="username-group" transform="translate(${usernameX}, 6) rotate(-2, 92, 16)">
     <polygon class="username-bg" points="10,0 170,0 142,36 10,36" fill="#FFFFFF"/>
     <polygon class="username-inner" points="15,5 160,5 140,31 15,31" fill="#000000"/>
     <text class="username-text" x="25" y="23" text-anchor="start">${username}</text>
